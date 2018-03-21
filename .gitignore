@@ -1,0 +1,10 @@
+# ignore autosaves
+\#*
+~*
+\*~
+
+# Weird Files'
+.DS_Store
+
+# pycharm folder
+.idea
