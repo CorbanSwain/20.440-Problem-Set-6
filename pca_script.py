@@ -58,9 +58,11 @@ def scatter_plot(x, y, xlabel, ylabel):
 
 
 plt.style.use('seaborn-notebook')
-plt.figure(0)
+plt.figure(0, (6, 6))
 plt.subplot(111, aspect='equal')
 scatter_plot(ax1, ax2, ax1_label, ax2_label)
+plt.savefig('figures/basic_data_fig.png', dpi=350)
+plt.show()
 
 log_2_data = np.log2(signal_data + 0.001)
 means = np.mean(log_2_data, 0)
@@ -69,9 +71,12 @@ std_data = (log_2_data - means) / stdevs
 
 ax1 = std_data[:, 0]
 ax2 = std_data[:, 1]
-plt.figure(1)
+plt.figure(1, (6, 6))
 plt.subplot(111, aspect='equal')
 scatter_plot(ax1, ax2, ax1_label, ax2_label)
+plt.savefig('figures/std_data_fig.png', dpi=350)
+plt.show()
+
 
 # perform PCA
 n_dims = np.size(std_data, 1)
@@ -94,7 +99,7 @@ def group_selecs(items):
 drug_set, drug_sels = group_selecs(drugs)
 cytokine_set, cytokine_sels = group_selecs(cytokines)
 
-plt.figure(2)
+plt.figure(2, (13, 6))
 ax = plt.subplot(121, aspect='equal')
 for i, (label, sel) in enumerate(zip(drug_set, drug_sels)):
     x = score[sel, 0]
@@ -117,10 +122,12 @@ plt.xlabel('PC 1')
 plt.ylabel('PC 2')
 plt.legend(title='Cytokines', bbox_to_anchor=(0.5, 1.02), loc=8,
            ncol=3, fontsize='x-small')
-
 pps_set, pps_sels = group_selecs(pps)
 st_set, st_sels = group_selecs(signal_type)
-plt.figure(3)
+plt.savefig('figures/pc_scores_fig.png', dpi=350)
+plt.show()
+
+plt.figure(3, (13, 6))
 ax = plt.subplot(121, aspect='equal')
 for i, (label, sel) in enumerate(zip(pps_set, pps_sels)):
     x = coeff[sel, 0]
@@ -143,10 +150,12 @@ for i, (label, sel) in enumerate(zip(st_set, st_sels)):
     else: mk = 's'
     plt.plot(x, y, mk, label=label)
 ax.grid(True, linestyle='--')
-plt.xlabel('PC 1')
-plt.ylabel('PC 2')
+plt.xlabel('Loadings for PC 1')
+plt.ylabel('Loadings for PC 2')
 plt.legend(title='Signal types', bbox_to_anchor=(0.5, 1.02), loc=8,
            ncol=3, fontsize='x-small')
+plt.savefig('figures/pc_loadings_fig.png', dpi=350)
+plt.show()
 
 data_approx = np.matmul(score[:, 0:2], coeff.T[0:2, :])
 pick_near = 'p-p90RSK_24hr'
@@ -154,7 +163,7 @@ pick_far = 'p-p38_48hr'
 near_idx = np.where(pps_signal == pick_near)[0]
 far_idx = np.where(pps_signal == pick_far)[0]
 
-plt.figure(4)
+plt.figure(4, (13, 6))
 ax = plt.subplot(121, aspect='equal')
 ax.grid(True, linestyle='--')
 plt.plot(np.arange(-3, 5), np.arange(-3, 5), 'k:')
@@ -163,7 +172,7 @@ plt.title('Comparison for %s, LOW PC Loadings' % pick_near)
 plt.xlabel('Actual Reading (Normalized)')
 plt.ylabel('Approximated Reading')
 plt.xlim((-2.5, 3.5))
-plt.ylim((-1.5, 2.5))
+plt.ylim((-2, 3))
 ax = plt.subplot(122, aspect='equal')
 ax.grid(True, linestyle='--')
 plt.plot(np.arange(-3, 5), np.arange(-3, 5), 'k:')
@@ -173,4 +182,5 @@ plt.xlabel('Actual Reading (Normalized)')
 plt.ylabel('Approximated Reading')
 plt.xlim((-1.5, 3.5))
 plt.ylim((-1.5, 2.5))
+plt.savefig('figures/data_approx_compare_fig.png', dpi=350)
 plt.show()

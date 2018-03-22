@@ -72,9 +72,17 @@ def enrichment_score(subset,
 query = ['A', 'B', 'C']
 es_abc, es_abc_max = enrichment_score(query)
 print('ES for [A, B, C]: %5.2f' % es_abc_max)
-plt.style.use('fivethirtyeight')
-plt.figure(0)
-plt.plot(es_abc)
+plt.style.use('seaborn-notebook')
+plt.figure(0, (7, 4))
+plt.plot(np.arange(0, 27), np.arange(0, 27) * 0, ':k')
+plt.xlim((0, 26))
+plt.plot(es_abc, label='[A, B, C]')
+plt.legend()
+plt.xlabel('Gene Rank')
+plt.ylabel('Running Enrichment Score')
+plt.tight_layout()
+plt.savefig('figures/abc_es_fig.png', dpi=350)
+plt.show(block=False)
 
 # Problem 1-D
 query_list = [['A', 'B', 'Y'],
@@ -82,13 +90,20 @@ query_list = [['A', 'B', 'Y'],
               ['A', 'H', 'O', 'V'],
               ['L', 'M', 'N', 'O']]
 
-plt.figure(1)
+plt.figure(1, (7, 4))
 for q in query_list:
     es, es_max = enrichment_score(q)
-    plt.plot(es)
     q_str = '[' + ', '.join(q) + ']'
+    plt.plot(es, label=q_str)
     print('ES for %15s is %5.2f' % (q_str, es_max))
 
+plt.plot(np.arange(0, 27), np.arange(0, 27) * 0, ':k')
+plt.xlim((0, 26))
+plt.xlabel('Gene Rank')
+plt.ylabel('Running Enrichment Score')
+plt.legend()
+plt.tight_layout()
+plt.savefig('figures/multi_es_fig.png', dpi=350)
 plt.show()
 
 # Problem 1-E
@@ -103,8 +118,6 @@ for q in query_list:
         np.random.shuffle(rand_ranks)
         rand_rank_dict = dict(zip(sort_gene_list, rand_ranks))
         _, es_null[i] = enrichment_score(q, rand_rank_dict)
-    # FIXME - np.sign() will return zero for zero values, should zero be included?
-    # could use             (        ...      in (np.sign(es_obs), 0))[0]
     es_null_valid = np.where(np.sign(es_null) == np.sign(es_obs))[0]
     es_null = es_null[es_null_valid]
     p_val = len(np.where(abs(es_null) > abs(es_obs))[0]) / len(es_null)
