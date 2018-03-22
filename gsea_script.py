@@ -1,7 +1,9 @@
-import matplotlib as mpl
+#!/bin/python3
+# gsea_script.py
+# Corban Swain, March 2018
+
 import numpy as np
 import os
-import itertools
 import matplotlib.pyplot as plt
 import re
 
@@ -56,7 +58,7 @@ def enrichment_score(subset,
                      ranked_scores=ranked_snr):
     n_subset = len(subset)
     n_genes = len(rank_dict)
-    subset_ranks = np.abs(np.array([rank_dict[g] for g in subset]))
+    subset_ranks = np.array([rank_dict[g] for g in subset])
     subset_scores = ranked_scores[subset_ranks]
     subset_tot = np.sum(np.power(subset_scores, p_exp))
     miss_penalty = 1 / (n_genes - n_subset)
@@ -101,7 +103,8 @@ for q in query_list:
         np.random.shuffle(rand_ranks)
         rand_rank_dict = dict(zip(sort_gene_list, rand_ranks))
         _, es_null[i] = enrichment_score(q, rand_rank_dict)
-    # FIXME - np.sign() will return zero for zero values
+    # FIXME - np.sign() will return zero for zero values, should zero be included?
+    # could use             (        ...      in (np.sign(es_obs), 0))[0]
     es_null_valid = np.where(np.sign(es_null) == np.sign(es_obs))[0]
     es_null = es_null[es_null_valid]
     p_val = len(np.where(abs(es_null) > abs(es_obs))[0]) / len(es_null)
