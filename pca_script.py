@@ -58,11 +58,12 @@ def scatter_plot(x, y, xlabel, ylabel):
 
 
 plt.style.use('seaborn-notebook')
-plt.figure(0, (6, 6))
+fignum = 0
+plt.figure(fignum, (6, 6))
 plt.subplot(111, aspect='equal')
 scatter_plot(ax1, ax2, ax1_label, ax2_label)
 plt.savefig('figures/basic_data_fig.png', dpi=350)
-plt.show()
+# plt.show()
 
 log_2_data = np.log2(signal_data + 0.001)
 means = np.mean(log_2_data, 0)
@@ -71,11 +72,12 @@ std_data = (log_2_data - means) / stdevs
 
 ax1 = std_data[:, 0]
 ax2 = std_data[:, 1]
-plt.figure(1, (6, 6))
+fignum += 1
+plt.figure(fignum, (6, 6))
 plt.subplot(111, aspect='equal')
 scatter_plot(ax1, ax2, ax1_label, ax2_label)
 plt.savefig('figures/std_data_fig.png', dpi=350)
-plt.show()
+# plt.show()
 
 
 # perform PCA
@@ -88,18 +90,38 @@ print('coeff.shape = ' + str(coeff.shape))
 explained = pca.explained_variance_ratio_
 print('explained.shape = ' + str(explained.shape))
 
+fignum += 1
+plt.figure(fignum, (7, 4))
+plt.plot(np.arange(len(explained)) + 1, explained * 100,
+         'o-', markersize=7, clip_on=False, zorder=100)
+plt.xlim((1, len(explained)))
+plt.ylim((0, 30))
+plt.xlabel('Principal Component Number')
+plt.ylabel('% Variance Explained')
+plt.tight_layout()
+plt.savefig('figures/pc_explained_fig.png', dpi=350)
+# plt.show()
 
-def group_selecs(items):
-    item_set = list(set(items))
-    item_set.sort()
+def group_selecs(items, item_set=None):
+    if item_set is None:
+        item_set = list(set(items))
+        item_set.sort()
     sels = [np.where(items == i)[0] for i in item_set]
     return item_set, sels
+
+
+xy = (np.arange(-100, 100) * 0, np.arange(-100, 100))
+def plot_xy_axes():
+    plt.autoscale(False)
+    plt.plot(xy[0], xy[1], 'k-', zorder=0, linewidth=0.75)
+    plt.plot(xy[1], xy[0], 'k-', zorder=0, linewidth=0.75)
 
 
 drug_set, drug_sels = group_selecs(drugs)
 cytokine_set, cytokine_sels = group_selecs(cytokines)
 
-plt.figure(2, (13, 6))
+fignum += 1
+plt.figure(fignum, (13, 6))
 ax = plt.subplot(121, aspect='equal')
 for i, (label, sel) in enumerate(zip(drug_set, drug_sels)):
     x = score[sel, 0]
@@ -107,7 +129,8 @@ for i, (label, sel) in enumerate(zip(drug_set, drug_sels)):
     if i < 6: mk = 'o'
     else: mk = 'v'
     plt.plot(x, y, mk, label=label)
-ax.grid(True, linestyle='--')
+# ax.grid(True, linestyle='--')
+plot_xy_axes()
 plt.xlabel('PC 1')
 plt.ylabel('PC 2')
 plt.legend(title='Drugs', bbox_to_anchor=(0.5, 1.02), loc=8,
@@ -117,17 +140,20 @@ for label, sel in zip(cytokine_set, cytokine_sels):
     x = score[sel, 0]
     y = score[sel, 1]
     plt.plot(x, y, 'o', label=label)
-ax.grid(True, linestyle='--')
+# ax.grid(True, linestyle='--')
+plot_xy_axes()
 plt.xlabel('PC 1')
 plt.ylabel('PC 2')
 plt.legend(title='Cytokines', bbox_to_anchor=(0.5, 1.02), loc=8,
            ncol=3, fontsize='x-small')
 pps_set, pps_sels = group_selecs(pps)
-st_set, st_sels = group_selecs(signal_type)
+st_set = ['0.33hr', '4hr', '24hr', '48hr', 'lateAvg', 'integral']
+st_set, st_sels = group_selecs(signal_type, st_set)
 plt.savefig('figures/pc_scores_fig.png', dpi=350)
-plt.show()
+# plt.show()
 
-plt.figure(3, (13, 6))
+fignum += 1
+plt.figure(fignum, (13, 6))
 ax = plt.subplot(121, aspect='equal')
 for i, (label, sel) in enumerate(zip(pps_set, pps_sels)):
     x = coeff[sel, 0]
@@ -136,9 +162,10 @@ for i, (label, sel) in enumerate(zip(pps_set, pps_sels)):
     elif i < 12: mk = 'v'
     else: mk = 's'
     plt.plot(x, y, mk, label=label)
-ax.grid(True, linestyle='--')
-plt.xlabel('PC 1')
-plt.ylabel('PC 2')
+#ax.grid(True, linestyle='--')
+plot_xy_axes()
+plt.xlabel('Loadings for PC 1')
+plt.ylabel('Loadings for PC 2')
 plt.legend(title='Phosphoproteins', bbox_to_anchor=(0.5, 1.02), loc=8,
            ncol=5, fontsize='x-small')
 ax = plt.subplot(122, aspect='equal')
@@ -149,13 +176,14 @@ for i, (label, sel) in enumerate(zip(st_set, st_sels)):
     elif i < 12: mk = 'v'
     else: mk = 's'
     plt.plot(x, y, mk, label=label)
-ax.grid(True, linestyle='--')
+#ax.grid(True, linestyle='--')
+plot_xy_axes()
 plt.xlabel('Loadings for PC 1')
 plt.ylabel('Loadings for PC 2')
 plt.legend(title='Signal types', bbox_to_anchor=(0.5, 1.02), loc=8,
            ncol=3, fontsize='x-small')
 plt.savefig('figures/pc_loadings_fig.png', dpi=350)
-plt.show()
+# plt.show()
 
 data_approx = np.matmul(score[:, 0:2], coeff.T[0:2, :])
 pick_near = 'p-p90RSK_24hr'
@@ -163,9 +191,9 @@ pick_far = 'p-p38_48hr'
 near_idx = np.where(pps_signal == pick_near)[0]
 far_idx = np.where(pps_signal == pick_far)[0]
 
-plt.figure(4, (13, 6))
+fignum += 1
+plt.figure(fignum, (13, 6))
 ax = plt.subplot(121, aspect='equal')
-ax.grid(True, linestyle='--')
 plt.plot(np.arange(-3, 5), np.arange(-3, 5), 'k:')
 plt.plot(std_data[:, near_idx], data_approx[:, near_idx], 'o')
 plt.title('Comparison for %s, LOW PC Loadings' % pick_near)
@@ -173,8 +201,8 @@ plt.xlabel('Actual Reading (Normalized)')
 plt.ylabel('Approximated Reading')
 plt.xlim((-2.5, 3.5))
 plt.ylim((-2, 3))
+plot_xy_axes()
 ax = plt.subplot(122, aspect='equal')
-ax.grid(True, linestyle='--')
 plt.plot(np.arange(-3, 5), np.arange(-3, 5), 'k:')
 plt.plot(std_data[:, far_idx], data_approx[:, far_idx], 'o')
 plt.title('Comparison for %s, HIGH PC Loadings' % pick_far)
@@ -182,5 +210,6 @@ plt.xlabel('Actual Reading (Normalized)')
 plt.ylabel('Approximated Reading')
 plt.xlim((-1.5, 3.5))
 plt.ylim((-1.5, 2.5))
+plot_xy_axes()
 plt.savefig('figures/data_approx_compare_fig.png', dpi=350)
 plt.show()
